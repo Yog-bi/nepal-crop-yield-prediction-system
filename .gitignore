@@ -1,0 +1,17 @@
+﻿.env
+.env.*
+!.env.example
+__pycache__/
+.pytest_cache/
+*.pyc
+.venv/
+venv/
+node_modules/
+*.log
+.vscode/
+*.bak
+*.joblib
+*.csv
+includes/config.php
+includes/db.php
+historical_real_data.sql
