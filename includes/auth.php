@@ -159,7 +159,8 @@ function login_rate_limit_hash(string $value): string
         // Preserve existing local installations while supporting hosted paths.
         $keyPath = $config['login_hmac_key_file']
             ?? (PHP_OS_FAMILY === 'Windows'
-                ? 'C:/xampp/private/crop-secrets/login-hmac.key' : '');
+                ? 'C:/xampp/private/crop-secrets/login-hmac.key'
+                : dirname(__DIR__) . '/private/login-hmac.key');
     }
     if (!is_string($keyPath) || $keyPath === '') {
         throw new RuntimeException('Login security key path not configured.');
@@ -177,7 +178,17 @@ function login_rate_limit_hash(string $value): string
             $file = strtolower($file);
         }
         if (strpos($file, $root) === 0) {
-            throw new RuntimeException('Login security key must be outside the document root.');
+            // InfinityFree confines PHP to htdocs. Only the dedicated,
+            // HTTP-denied private directory is allowed within that root.
+            $privateDirectory = realpath(dirname(__DIR__) . '/private');
+            $accessRules = $privateDirectory === false
+                ? false : @file_get_contents($privateDirectory . '/.htaccess');
+            if ($privateDirectory === false
+                || dirname($resolved) !== $privateDirectory
+                || $accessRules === false
+                || !preg_match('/\A\s*(?:Require\s+all\s+denied|Deny\s+from\s+all)\s*\z/i', $accessRules)) {
+                throw new RuntimeException('Login security key must be in a protected private directory.');
+            }
         }
     }
     $key = @file_get_contents($resolved);

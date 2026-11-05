@@ -15,3 +15,6 @@ node_modules/
 includes/config.php
 includes/db.php
 historical_real_data.sql
+
+# Private authentication keys
+/private/
